@@ -1,4 +1,7 @@
 .env
 .idea
 .git
-
+/docker/secrets
+/docker/rabbitmq
+/docker/prod
+/docker/postgresql
