@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+    nginx:
+      build:
+        context: docker
+        dockerfile: dev/nginx/Dockerfile
+      volumes:
+        - ./app:/app
+      ports:
+        - "80:80"
+
+    fpm:
+      build:
+        context: docker
+        dockerfile: dev/php-fpm/Dockerfile
+      volumes:
+        - ./app:/app
+      environment:
+        APP_DEBUG: 1
+        POSTGRES_HOST: ${POSTGRES_HOST}
+        POSTGRES_USER: ${POSTGRES_USER}
+        POSTGRES_DB: ${POSTGRES_DB}
+        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      depends_on:
+        - nginx
+
+    cli:
+      build:
+        context: docker
+        dockerfile: dev/php-cli/Dockerfile
+      volumes:
+        - ./app:/app
+      environment:
+        APP_DEBUG: 1
+        POSTGRES_HOST: ${POSTGRES_HOST}
+        POSTGRES_USER: ${POSTGRES_USER}
+        POSTGRES_DB: ${POSTGRES_DB}
+        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+    postgresql:
+      image: postgres:16-alpine3.18
+      environment:
+        APP_DEBUG: 1
+        POSTGRES_HOST: ${POSTGRES_HOST}
+        POSTGRES_USER: ${POSTGRES_USER}
+        POSTGRES_DB: ${POSTGRES_DB}
+        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      volumes:
+        - ./docker/postgresql:/var/lib/postgresql/data
+      ports:
+        - "5432:5432"
+
