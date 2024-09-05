@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use phpDocumentor\Reflection\Types\This;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -47,7 +48,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
 
     /** @var Collection<int, Post>  */
-    #[ORM\OneToMany(targetEntity: Post::class)]
+    #[ORM\OneToMany(targetEntity: Post::class, mappedBy: 'user')]
     private Collection $posts;
 
 
@@ -116,4 +117,33 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->id;
     }
+
+    /**
+     * @return \DateTimeImmutable
+     */
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    /**
+     * @param \DateTimeImmutable $createdAt
+     */
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    {
+        $this->createdAt = $createdAt;
+        return $this;
+    }
+
+    public function getUserComments(): ArrayCollection|Collection
+    {
+        return $this->comments;
+    }
+
+    public function getUserPosts(): ArrayCollection|Collection
+    {
+        return $this->posts;
+    }
+
+
 }

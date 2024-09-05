@@ -6,6 +6,7 @@ use App\Repository\PostRepository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use phpDocumentor\Reflection\Types\This;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
@@ -38,6 +39,7 @@ class Post
 
 
     /** @var Collection<int, Comment>  */
+    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'post')]
     private Collection $comments;
 
 
@@ -52,4 +54,83 @@ class Post
     {
         return $this->id;
     }
+
+    /**
+     * @return string
+     */
+    public function getTitle(): string
+    {
+        return $this->title;
+    }
+
+    /**
+     * @param string $title
+     * @return Post
+     */
+    public function setTitle(string $title): static
+    {
+        $this->title = $title;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSlug(): string
+    {
+        return $this->slug;
+    }
+
+    /**
+     * @return string
+     */
+    public function getContent(): string
+    {
+        return $this->content;
+    }
+
+    /**
+     * @param string $content
+     * @return Post
+     */
+    public function setContent(string $content): static
+    {
+        $this->content = $content;
+        return $this;
+    }
+
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function getPostOwner(): User
+    {
+        return $this->user;
+    }
+
+    public function setPostOwner(User $user): static
+    {
+        $this->user = $user;
+        return $this;
+    }
+
+    public function addComment(Comment $comment): void
+    {
+        $comment->setCommentPost($this);
+
+        if (!$this->comments->contains($comment)) {
+            $this->comments->add($comment);
+        }
+    }
+
+    public function removeComment(Comment $comment): static
+    {
+        $this->comments->removeElement($comment);
+        return $this;
+    }
+
+
+
+
 }
