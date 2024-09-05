@@ -3,10 +3,10 @@
 namespace App\Entity;
 
 use App\Repository\PostRepository;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use phpDocumentor\Reflection\Types\This;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
@@ -27,7 +27,7 @@ class Post
 
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank]
-    #[Assert\Length(min: 10)]
+    #[Assert\Length(min: 4, max: 255)]
     private string $content;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
@@ -37,18 +37,16 @@ class Post
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
     private User $user;
 
-
     /** @var Collection<int, Comment>  */
     #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'post')]
     private Collection $comments;
 
 
-    public function __construct(User $user)
+    public function __construct()
     {
-        $this->user = $user;
         $this->createdAt = new \DateTimeImmutable();
+        $this->comments = new ArrayCollection();
     }
-
 
     public function getId(): ?int
     {
@@ -79,6 +77,12 @@ class Post
     public function getSlug(): string
     {
         return $this->slug;
+    }
+
+    public function setSlug(string $slug): static
+    {
+        $this->slug = $slug;
+        return $this;
     }
 
     /**
@@ -128,6 +132,11 @@ class Post
     {
         $this->comments->removeElement($comment);
         return $this;
+    }
+
+    public function getPostDateOfCreation(): \DateTimeImmutable
+    {
+        return $this->createdAt;
     }
 
 
