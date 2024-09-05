@@ -128,6 +128,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @param \DateTimeImmutable $createdAt
+     * @return User
      */
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
