@@ -78,6 +78,7 @@ class AuthController extends AbstractController
 
             return $this->redirectToRoute('app_home');
         }
+
         return $response->setStatusCode(402, 'invalid uri!');
     }
 
