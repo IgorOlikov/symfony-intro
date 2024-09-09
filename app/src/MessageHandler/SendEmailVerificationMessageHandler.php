@@ -47,7 +47,7 @@ final class SendEmailVerificationMessageHandler
 
         $url = $url . '/' . $userId . '/' . $hash . '?' . 'expires=' . $expires;
 
-        $signature = hash_hmac('sha256', $url, env('APP_SECRET'));
+        $signature = hash_hmac('sha256', $url, $_ENV['APP_SECRET']);
 
         return $url . '&' . 'signature' . $signature;
     }

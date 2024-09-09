@@ -13,6 +13,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use function Symfony\Component\DependencyInjection\Loader\Configurator\env;
+
 
 class AuthController extends AbstractController
 {
@@ -43,22 +45,40 @@ class AuthController extends AbstractController
            $this->entityManager->persist($user);
            $this->entityManager->flush();
 
-
-
-
            // verification link email message
-           $this->messageBus->dispatch(new SendEmailVerificationMessage());
-
+           $this->messageBus->dispatch(new SendEmailVerificationMessage($user));
 
            return $this->redirectToRoute('app_home');
         }
 
-
-
         return $this->render('auth/register.html.twig', [
             'form' => $form,
         ]);
+    }
 
+    #[Route('/verify-email/{userId}/{hash}', name: 'app_verify_email', methods: ['GET'])]
+    public function verifyEmail(Request $request, Response $response, int $userId, string $hash): Response
+    {
+        $urlArr = preg_split('{&signature=}', $request->getUri());
+
+        $reqUrl = $urlArr[0];
+        $reqSignature = $urlArr[1];
+
+        $sign = hash_hmac('sha256', $reqUrl, $_ENV['APP_SECRET']);
+
+        $reqTimestamp = $request->get('expires');
+
+        $nowTimestamp = (new \DateTimeImmutable())->getTimestamp();
+
+        if (($reqSignature === $sign) && ($reqTimestamp < $nowTimestamp)) {
+            $user = $this->entityManager->getRepository(User::class)->findOneBy(['id' => $userId]);
+            $user->setEmailVerifiedAt(new \DateTimeImmutable());
+
+            //flash message !?
+
+            return $this->redirectToRoute('app_home');
+        }
+        return $response->setStatusCode(402, 'invalid uri!');
     }
 
 }

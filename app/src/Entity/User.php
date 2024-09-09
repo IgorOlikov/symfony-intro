@@ -151,5 +151,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->posts;
     }
 
+    public function getEmailVerifiedAt(): ?\DateTimeImmutable
+    {
+        return $this->emailVerifiedAt;
+    }
+
+    public function setEmailVerifiedAt(\DateTimeImmutable $dateTimeImmutable): static
+    {
+        if (!$this->getEmailVerifiedAt()) {
+            $this->emailVerifiedAt = $dateTimeImmutable;
+        }
+        return $this;
+    }
+
 
 }
