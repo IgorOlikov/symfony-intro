@@ -25,13 +25,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(type: Types::STRING, unique: true)]
-    #[Assert\NotBlank]
+    #[Assert\NotBlank(message: 'поле name не должно быть пустым!')]
+    #[Assert\Length(min: 5, max: 20)]
+    #[Assert\Type(type: Types::STRING, message: 'Строка!!')]
     private string $name;
 
     #[ORM\Column(type: Types::STRING ,length: 100, unique: true)]
     #[Assert\NotBlank]
-    #[Assert\Length(min: 2, max: 50)]
+    #[Assert\Length(min: 5, max: 50)]
+    #[Assert\Email(message: 'Поле должно быть типом Email!')]
     private string $email;
+
+    #[ORM\Column(type: 'json')]
+    private array $roles = [];
+
 
     #[ORM\Column(type: Types::STRING, length: 255)]
     #[Assert\NotBlank]
@@ -39,11 +46,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private string $password;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
-    #[Assert\DateTime]
     private \DateTimeImmutable $createdAt;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
-    #[Assert\DateTime]
     private \DateTimeImmutable|null $emailVerifiedAt = null;
 
 
@@ -98,7 +103,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setPassword(string $password): static
     {
-        $this->password = hash('sha512', $password);
+        $this->password = $password;
         return $this;
     }
 
