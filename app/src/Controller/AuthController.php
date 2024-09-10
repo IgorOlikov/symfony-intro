@@ -21,8 +21,7 @@ class AuthController extends AbstractController
 
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private MessageBusInterface $messageBus,
-
+        private MessageBusInterface $messageBus
     )
     {
     }
@@ -56,8 +55,8 @@ class AuthController extends AbstractController
         ]);
     }
 
-    #[Route('/verify-email/{userId}/{hash}', name: 'app_verify_email', methods: ['GET'])]
-    public function verifyEmail(Request $request, Response $response, int $userId, string $hash): Response
+    #[Route('/verify-email/{userId}/{hash}', name: 'app_verify_email')]
+    public function verifyEmail(Request $request, int $userId, string $hash): Response
     {
         $urlArr = preg_split('{&signature=}', $request->getUri());
 
@@ -70,16 +69,23 @@ class AuthController extends AbstractController
 
         $nowTimestamp = (new \DateTimeImmutable())->getTimestamp();
 
-        if (($reqSignature === $sign) && ($reqTimestamp < $nowTimestamp)) {
+        if ($reqSignature !== $sign) {
+            return (new Response())->setStatusCode(402, 'invalid signature');
+        }
+
+        if ($reqTimestamp > $nowTimestamp) {
             $user = $this->entityManager->getRepository(User::class)->findOneBy(['id' => $userId]);
             $user->setEmailVerifiedAt(new \DateTimeImmutable());
 
-            //flash message !?
+            $this->entityManager->persist($user);
+            $this->entityManager->flush();
 
             return $this->redirectToRoute('app_home');
+        } else {
+            return (new Response())->setStatusCode(402, 'Verification link expired');
         }
 
-        return $response->setStatusCode(402, 'invalid uri!');
+        return (new Response())->setStatusCode('402','Invalid verification uri');
     }
 
 }

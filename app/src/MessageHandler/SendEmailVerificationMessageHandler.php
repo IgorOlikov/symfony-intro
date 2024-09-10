@@ -4,15 +4,17 @@ namespace App\MessageHandler;
 
 use App\Entity\User;
 use App\Message\SendEmailVerificationMessage;
+use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
-use function Symfony\Component\DependencyInjection\Loader\Configurator\env;
 
 #[AsMessageHandler]
 final class SendEmailVerificationMessageHandler
 {
-    public function __construct(private MailerInterface $mailer)
+    public function __construct(
+        //private MailerInterface $mailer,
+        private LoggerInterface $logger)
     {
     }
 
@@ -22,6 +24,8 @@ final class SendEmailVerificationMessageHandler
 
         $signedUrl = $this->generateSignedUrl($user);
 
+
+        /**
         $email = (new TemplatedEmail())
             ->from('simple_symfony_app')
             ->to($user->getEmail())
@@ -33,11 +37,13 @@ final class SendEmailVerificationMessageHandler
             ]);
 
         $this->mailer->send($email);
+
+        */
     }
 
     public function generateSignedUrl(User $user): string
     {
-        $url = 'http://localhost/verify-emal';
+        $url = 'http://localhost/verify-email';
 
         $userId = $user->getUserIdentifier();
 
@@ -49,6 +55,11 @@ final class SendEmailVerificationMessageHandler
 
         $signature = hash_hmac('sha256', $url, $_ENV['APP_SECRET']);
 
-        return $url . '&' . 'signature' . $signature;
+        $verificationUrl = $url . '&' . 'signature=' . $signature;
+
+        //debug log
+        $this->logger->log(3, $verificationUrl);
+
+        return $verificationUrl;
     }
 }
