@@ -16,7 +16,7 @@ class HomeController extends AbstractController
     #[Route('/home', name: 'app_home')]
     public function index(EntityManagerInterface $em): Response
     {
-
+        //$this->denyAccessUnlessGranted('IS_AUTHENTICATED');
 
 
 
@@ -25,32 +25,5 @@ class HomeController extends AbstractController
         ]);
     }
 
-    #[Route('/post/create', name: 'app_create')]
-    public function create(Request $request): Response
-    {
-        $post = new Post();
 
-        $form = $this->createForm(PostType::class, $post);
-
-        $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-
-
-            $post = $form->getData();
-
-
-            /** @var Post $post */
-            $post->setSlug('aloe');
-            //$post->setPostOwner();
-
-            dd($this->getUser());
-
-        }
-
-
-
-        return $this->render('post/create.html.twig', ['form' => $form]);
-
-
-    }
 }

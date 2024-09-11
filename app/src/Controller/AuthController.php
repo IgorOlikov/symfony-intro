@@ -12,11 +12,11 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 
 class AuthController extends AbstractController
 {
-
     public function __construct(
         private EntityManagerInterface $entityManager,
         private MessageBusInterface $messageBus
@@ -37,15 +37,18 @@ class AuthController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-           $user->setPassword($userPasswordHasher->hashPassword($user, $form->get('password')->getData()));
+            $user->setPassword($userPasswordHasher->hashPassword($user, $form->get('password')->getData()));
 
-           $this->entityManager->persist($user);
-           $this->entityManager->flush();
+            $this->entityManager->persist($user);
+            $this->entityManager->flush();
 
-           // verification link email message
-           $this->messageBus->dispatch(new SendEmailVerificationMessage($user));
+            // verification link email message
+            $this->messageBus->dispatch(new SendEmailVerificationMessage($user));
 
-           return $this->redirectToRoute('app_home');
+            //test
+            //$this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+
+            return $this->redirectToRoute('app_home');
         }
 
         return $this->render('auth/register.html.twig', [
@@ -86,4 +89,19 @@ class AuthController extends AbstractController
         return (new Response())->setStatusCode('402','Invalid verification uri');
     }
 
+    #[Route('/login', name: 'app_login')]
+    public function login(AuthenticationUtils $authenticationUtils): Response
+    {
+        $error = $authenticationUtils->getLastAuthenticationError();
+        // last username entered by the user
+        $lastUsername = $authenticationUtils->getLastUsername();
+
+        return $this->render('auth/login.html.twig', ['last_username' => $lastUsername, 'error' => $error]);
+    }
+
+    #[Route('/login/redirect', name: 'app_login_redirect')]
+    public function redirectLogin(): Response
+    {
+        return $this->redirectToRoute('app_home');
+    }
 }
