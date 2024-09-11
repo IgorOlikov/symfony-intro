@@ -7,9 +7,12 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
+#[UniqueEntity('slug')]
 class Post
 {
     #[ORM\Id]
@@ -21,8 +24,7 @@ class Post
     #[Assert\Length(min: 10 , max: 200)]
     private string $title;
 
-    #[ORM\Column(type: Types::STRING, length: 255)]
-    #[Assert\Length(min: 10, max: 255)]
+    #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
     private string $slug;
 
     #[ORM\Column(type: Types::TEXT)]
@@ -139,6 +141,12 @@ class Post
         return $this->createdAt;
     }
 
+    public function computeSlug(SluggerInterface $slugger): void
+    {
+        if (!$this->slug || '-' === $this->slug) {
+            $this->slug = (string) $slugger->slug($this->title)->lower();
+        }
+    }
 
 
 
