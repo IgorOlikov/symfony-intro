@@ -13,7 +13,9 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class PostController extends AbstractController
 {
-    public function __construct(private EntityManagerInterface $entityManager)
+    public function __construct(
+        private EntityManagerInterface $entityManager
+    )
     {
     }
 
@@ -49,7 +51,6 @@ class PostController extends AbstractController
     public function show(
        #[MapEntity(mapping: ['slug' => 'slug'])] Post $post)
     {
-        dd($post);
-
+        return $this->render('post/show.html.twig', ['post' => $post, 'user' => $post->getPostOwner()]);
     }
 }
