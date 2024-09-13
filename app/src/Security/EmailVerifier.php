@@ -4,31 +4,36 @@ namespace App\Security;
 
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
 use SymfonyCasts\Bundle\VerifyEmail\VerifyEmailHelperInterface;
 
 class EmailVerifier
 {
     public function __construct(
         private VerifyEmailHelperInterface $verifyEmailHelper,
+        // f your code used MailerInterface, you need to replace it by TransportInterface
+        // to have the SentMessage object returned.
         private MailerInterface $mailer,
-        private EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager,
+        private LoggerInterface $logger
     ) {
     }
-
 
     /**
      * @param string $verifyEmailRouteName
      * @param TemplatedEmail $email
-     * @throws TransportExceptionInterface
      * @param  User $user
      */
-    public function sendEmailConfirmation(string $verifyEmailRouteName, UserInterface $user, TemplatedEmail $email): void
+    public function sendEmailConfirmation(
+        string $verifyEmailRouteName,
+        UserInterface $user,
+        TemplatedEmail $email
+    ): void
     {
         $signatureComponents = $this->verifyEmailHelper->generateSignature(
             $verifyEmailRouteName,
@@ -43,7 +48,14 @@ class EmailVerifier
 
         $email->context($context);
 
-        $this->mailer->send($email);
+        try {
+            $this->mailer->send($email);
+        } catch (TransportExceptionInterface $exception) {
+            $this->logger->error($exception->getMessage(), $exception->getTrace());
+        }
+
+
+
     }
 
     /**
