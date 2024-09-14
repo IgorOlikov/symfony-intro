@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
 use SymfonyCasts\Bundle\VerifyEmail\VerifyEmailHelperInterface;
 
 class EmailVerifier
@@ -38,7 +39,8 @@ class EmailVerifier
         $signatureComponents = $this->verifyEmailHelper->generateSignature(
             $verifyEmailRouteName,
             $user->getUserIdentifier(),
-            $user->getEmail()
+            $user->getEmail(),
+            ['id' => $user->getUserIdentifier()]
         );
 
         $context = $email->getContext();
@@ -53,9 +55,6 @@ class EmailVerifier
         } catch (TransportExceptionInterface $exception) {
             $this->logger->error($exception->getMessage(), $exception->getTrace());
         }
-
-
-
     }
 
     /**
@@ -64,8 +63,16 @@ class EmailVerifier
      */
     public function handleEmailConfirmation(Request $request, UserInterface $user): void
     {
-        $this->verifyEmailHelper->validateEmailConfirmationFromRequest($request, $user->getUserIdentifier(), $user->getEmail());
-
+        try {
+            $this->verifyEmailHelper
+                ->validateEmailConfirmationFromRequest(
+                    $request,
+                    $user->getUserIdentifier(),
+                    $user->getEmail()
+                );
+        } catch (VerifyEmailExceptionInterface $exception) {
+            $this->logger->error($exception->getMessage(), $exception->getTrace());
+        }
         $user->setEmailVerifiedAt(new \DateTimeImmutable());
 
         $this->entityManager->persist($user);
