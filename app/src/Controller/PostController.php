@@ -22,8 +22,15 @@ class PostController extends AbstractController
     #[Route('/post', name: 'app_post')]
     public function index(): Response
     {
+        //@TODO add pagination
+
+        $posts = $this->entityManager->getRepository(Post::class)->findAll();
+
+
+
         return $this->render('post/index.html.twig', [
             'controller_name' => 'PostController',
+            'posts' => $posts
         ]);
     }
 

@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\CommentRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CommentRepository::class)]
@@ -23,7 +24,9 @@ class Comment
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: false)]
     private \DateTimeImmutable $createdAt;
 
-    // parent_id !!!!!!!!!!!!!!
+    #[ORM\ManyToOne(targetEntity: 'comment', inversedBy: 'comment')]
+    #[ORM\JoinColumn(name: 'parent_id', referencedColumnName: 'id', nullable: true)]
+    private ?int $parentId = null;
 
     #[ORM\ManyToOne(targetEntity: 'user', inversedBy: 'comment')]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
@@ -63,7 +66,7 @@ class Comment
     /**
      * @return Comment
      */
-    public function setCommentOwner(User $user): static
+    public function setCommentOwner(User|UserInterface $user): static
     {
         $this->user = $user;
 
@@ -80,5 +83,15 @@ class Comment
     public function getCommentPost(): Post
     {
         return $this->post;
+    }
+
+    public function getParentId(): ?int
+    {
+        return $this->parentId;
+    }
+
+    public function setParentId(?int $parentId): void
+    {
+        $this->parentId = $parentId;
     }
 }
