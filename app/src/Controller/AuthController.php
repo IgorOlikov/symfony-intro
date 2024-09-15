@@ -10,7 +10,6 @@ use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
@@ -32,9 +31,6 @@ class AuthController extends AbstractController
     {
     }
 
-    /**
-     * @throws TransportExceptionInterface
-     */
     #[Route('/register', name: 'app_register')]
     public function register(
         Request $request,
@@ -42,6 +38,11 @@ class AuthController extends AbstractController
         UserAuthenticatorInterface $userAuthenticator
 
     ): Response {
+
+        if ($this->isGranted('IS_AUTHENTICATED_FULLY')) {
+            return $this->redirectToRoute('app_home');
+        }
+
         $user = new User();
 
         $form = $this->createForm(RegisterType::class, $user);
@@ -128,6 +129,10 @@ class AuthController extends AbstractController
     #[Route('/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
+        if ($this->isGranted('IS_AUTHENTICATED_FULLY')) {
+            return $this->redirectToRoute('app_home');
+        }
+
         $error = $authenticationUtils->getLastAuthenticationError();
         // last username entered by the user
         $lastUsername = $authenticationUtils->getLastUsername();
@@ -140,4 +145,9 @@ class AuthController extends AbstractController
     {
         return $this->redirectToRoute('app_home');
     }
+
+
+
+
+
 }

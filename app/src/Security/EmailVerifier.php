@@ -75,6 +75,8 @@ class EmailVerifier
         }
         $user->setEmailVerifiedAt(new \DateTimeImmutable());
 
+        $user->setRoles(['ROLE_VERIF_USER']);
+
         $this->entityManager->persist($user);
         $this->entityManager->flush();
     }
