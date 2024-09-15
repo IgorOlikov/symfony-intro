@@ -5,3 +5,4 @@
 /docker/rabbitmq
 /docker/prod
 /docker/postgresql
+/docker/mailpit
