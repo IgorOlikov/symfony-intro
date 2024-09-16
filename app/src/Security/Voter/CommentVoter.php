@@ -40,6 +40,7 @@ final class CommentVoter extends Voter
             return false;
         }
 
+
         $comment = $subject;
 
         // ... (check conditions and return true to grant permission) ...

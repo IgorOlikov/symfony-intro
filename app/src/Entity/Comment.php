@@ -26,13 +26,13 @@ class Comment
 
     #[ORM\ManyToOne(targetEntity: 'comment', inversedBy: 'comment')]
     #[ORM\JoinColumn(name: 'parent_id', referencedColumnName: 'id', nullable: true)]
-    private ?int $parentId = null;
+    private ?Comment $parentComment = null;
 
-    #[ORM\ManyToOne(targetEntity: 'user', inversedBy: 'comment')]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'comment')]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
     private User $user;
 
-    #[ORM\ManyToOne(targetEntity: 'post', inversedBy: 'comment')]
+    #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: 'comment')]
     #[ORM\JoinColumn(name: 'post_id', referencedColumnName: 'id', nullable: false)]
     private Post $post;
 
@@ -85,13 +85,13 @@ class Comment
         return $this->post;
     }
 
-    public function getParentId(): ?int
+    public function getParentComment(): ?Comment
     {
-        return $this->parentId;
+        return $this->parentComment;
     }
 
-    public function setParentId(?int $parentId): void
+    public function setParentComment(?Comment $parentComment= null): void
     {
-        $this->parentId = $parentId;
+        $this->parentComment = $parentComment;
     }
 }

@@ -30,10 +30,14 @@ class CommentController extends AbstractController
         ]);
     }
 
-    #[IsGranted('create', 'comment' , 'Action not allowed', 403)]
-    #[Route('/post/{slug}/comment/create', name: 'app_create_comment')]
+    //#[IsGranted('create', 'comment' , 'Action not allowed', 403)]
+    #[IsGranted('ROLE_VERIF_USER')]
+    #[Route('/post/{slug}/comment/create/{comment}', name: 'app_create_comment',
+        defaults: ['comment' => null]
+    )]
     public function create(
         Request $request,
+        #[MapEntity(mapping: ['comment' => 'id'])] ?Comment $parentComment,
         #[MapEntity(mapping: ['slug' => 'slug'])] Post $post
     )
     : RedirectResponse|Response
@@ -41,13 +45,16 @@ class CommentController extends AbstractController
         $user = $this->getUser();
 
         $comment = new Comment();
-        $comment->setCommentPost($post);
-        $comment->setCommentOwner($user);
 
         $form = $this->createForm(CommentType::class, $comment);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+
+            $comment->setCommentPost($post);
+            $comment->setCommentOwner($user);
+            $comment->setParentComment($parentComment);
+
             $this->entityManager->persist($comment);
 
             $this->entityManager->flush();
